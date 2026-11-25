@@ -40,7 +40,8 @@ Les options **Privileged Gateway Intents** peuvent rester désactivées. [Guide 
 2. Dans le dossier du projet, lance :
 
    ```sh
-   npm run init
+   cd discord-vocal-main
+npm run init
    ```
 
 3. Quand le terminal te demande le token, colle-le et appuie sur **Entrée**. La saisie est masquée. Attends le message **Token enregistré** avant de démarrer.
