@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vocal Discord</title>
+  <link rel="stylesheet" href="/style.css">
+  <script defer src="/app.js"></script>
+  <script defer src="/grades-ui.js"></script>
+  <script defer src="/temporary-ui.js"></script>
+</head>
+<body>
+  <main>
+    <header class="top">
+      <div class="brand"><span class="mark" aria-hidden="true">▂▅▃▆</span> Vocal Discord</div>
+      <span class="status" id="status" role="status">Hors ligne</span>
+    </header>
+    <div class="intro">
+      <h1>Suivi vocal</h1>
+      <p>Temps de présence en salon vocal, par membre et par serveur.</p>
+    </div>
+    <p id="error" role="status" hidden></p>
+    <section class="panel setup" aria-labelledby="speech-title">
+      <div>
+        <h2 id="speech-title">Temps de parole</h2>
+        <p>Choisis un salon par serveur. Le bot le rejoint pour estimer le temps de parole à partir du son reçu, sans enregistrer l’audio.</p>
+      </div>
+      <form id="listen">
+        <label for="voice-guild">Serveur et salon à suivre</label>
+        <div class="controls voice-controls">
+          <select id="voice-guild" aria-label="Serveur à écouter"></select>
+          <select id="voice-channel" aria-label="Salon à écouter"></select>
+          <button id="voice-submit">Appliquer</button>
+        </div>
+        <p id="voice-status" role="status"></p>
+      </form>
+    </section>
+    <section class="panel setup temporary" aria-labelledby="temporary-title">
+      <div>
+        <h2 id="temporary-title">Vocal créateur</h2>
+        <p>Choisis un vocal existant. Quand un membre le rejoint, le bot crée son salon dans la même catégorie et l’y déplace. Le salon disparaît quand il se vide.</p>
+      </div>
+      <form id="temporary-form">
+        <label for="temporary-guild">Serveur</label>
+        <select id="temporary-guild" disabled></select>
+        <label for="temporary-channel">Salon créateur</label>
+        <div class="controls voice-controls">
+          <select id="temporary-channel" disabled><option value="">Désactivé</option></select>
+          <button id="temporary-save" disabled>Enregistrer</button>
+          <button id="temporary-create" type="button" disabled>Créer et activer</button>
+        </div>
+        <p id="temporary-status" role="status"></p>
+        <p><a id="temporary-admin" target="_blank" rel="noopener noreferrer" hidden>Autoriser le bot comme administrateur</a></p>
+      </form>
+    </section>
+    <div class="cards">
+      <div class="panel metric"><span>En vocal maintenant</span><strong id="active">0</strong></div>
+      <div class="panel metric"><span>Membres suivis</span><strong id="members">0</strong></div>
+      <div class="panel metric"><span>Temps cumulé</span><strong id="duration">0 s</strong></div>
+    </div>
+    <section class="panel ranking" aria-labelledby="ranking-title">
+      <div class="ranking-head">
+        <h2 id="ranking-title">Classement vocal</h2>
+        <select id="guild" aria-label="Serveur Discord"><option value="">Tous les serveurs</option></select>
+      </div>
+      <div class="scroll">
+        <table><thead><tr><th scope="col">Membre</th><th scope="col">Serveur</th><th scope="col">Salon actuel</th><th scope="col">Présence</th><th scope="col">Micro coupé</th><th scope="col">Parole estimée</th></tr></thead><tbody id="rows"></tbody></table>
+      </div>
+      <p class="empty" id="empty">Connecte ton bot pour démarrer le suivi.</p>
+    </section>
+    <section class="panel grades" aria-labelledby="grades-title">
+      <h2 id="grades-title">Grades</h2>
+      <div class="grade-grid">
+        <div>
+          <label for="grade-server">Serveur Discord</label>
+          <select id="grade-server" disabled></select>
+          <form id="grade-search">
+            <label for="grade-query">Pseudo ou identifiant Discord</label>
+            <div class="controls">
+              <input id="grade-query" maxlength="100" required disabled>
+              <button id="grade-search-button" disabled>Rechercher</button>
+            </div>
+          </form>
+          <label for="grade-member">Membre</label>
+          <select id="grade-member" disabled><option value="">Choisir un membre</option></select>
+          <p id="grade-current"></p>
+        </div>
+        <form id="grade-form">
+          <label for="grade-mode">Action</label>
+          <select id="grade-mode" disabled>
+            <option value="add">Attribuer un rôle</option>
+            <option value="remove">Retirer un rôle</option>
+            <option value="promote">Promouvoir</option>
+          </select>
+          <label class="grade-id-toggle"><input id="grade-use-id" type="checkbox" disabled> Saisir les identifiants des rôles</label>
+          <div id="grade-id-fields" hidden>
+            <p>Dans Discord, active le mode développeur, puis copie l’identifiant du rôle.</p>
+            <div id="grade-old-id-field" hidden>
+              <label for="grade-old-id">Identifiant du rôle actuel</label>
+              <input id="grade-old-id" inputmode="numeric" maxlength="20" pattern="[0-9]{17,20}" disabled>
+            </div>
+            <label for="grade-role-id">Identifiant du rôle</label>
+            <input id="grade-role-id" inputmode="numeric" maxlength="20" pattern="[0-9]{17,20}" disabled>
+          </div>
+          <div id="grade-list-fields">
+          <div id="grade-old-field" hidden>
+            <label for="grade-old">Rôle à remplacer</label>
+            <select id="grade-old" disabled></select>
+          </div>
+          <label for="grade-role">Rôle</label>
+          <select id="grade-role" required disabled></select>
+          </div>
+          <button id="grade-apply" disabled>Appliquer</button>
+        </form>
+      </div>
+      <p id="grade-permission" role="status"></p>
+      <p id="grade-message" role="status"></p>
+    </section>
+  </main>
+</body>
+</html>
