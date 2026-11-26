@@ -4,7 +4,7 @@ const status = byId('status');
 const labels = {
   unconfigured: 'Initialisation requise', credential_error: 'Token illisible',
   offline: 'Hors ligne', connecting: 'Connexion…', online: 'En ligne',
-  reconnecting: 'Reconnexion…', invalid: 'Token invalide', error: 'Connexion échouée',
+  message_intent: 'Accès au chat désactivé', reconnecting: 'Reconnexion…', invalid: 'Token invalide', error: 'Connexion échouée',
 };
 const voiceGuild = byId('voice-guild');
 const voiceChannel = byId('voice-channel');
@@ -91,6 +91,7 @@ function render() {
   showError(requestError || (data.storageError ? 'La sauvegarde locale a échoué.' : '') ||
     (data.status === 'unconfigured' ? 'Lance npm run init dans le terminal, puis redémarre cette application.' : '') ||
     (['invalid', 'credential_error'].includes(data.status) ? 'Relance npm run init dans le terminal pour remplacer le token, puis redémarre cette application.' : '') ||
+    (data.status === 'message_intent' ? 'Active Message Content Intent dans le portail Discord, onglet Bot, puis redémarre l’application.' : '') ||
     (data.status === 'error' ? 'Connexion à Discord impossible. Vérifie le token et ta connexion Internet.' : ''));
 }
 

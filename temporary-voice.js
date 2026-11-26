@@ -3,6 +3,7 @@ const { ChannelType, PermissionFlagsBits } = require('discord.js');
 
 const reason = 'Vocal Discord · Salons temporaires';
 const grace = 4000;
+const wait = 60_000;
 const required = [
   [PermissionFlagsBits.ViewChannel, 'Voir le salon'],
   [PermissionFlagsBits.Connect, 'Se connecter'],
@@ -30,6 +31,7 @@ class TemporaryVoice {
     this.config = {};
     this.rooms = {};
     this.pending = new Set();
+    this.waiting = new Map();
     this.deleting = new Set();
     this.timers = new Map();
     this.protectedUntil = new Map();
@@ -77,6 +79,7 @@ class TemporaryVoice {
       const missing = missingPermissions(guild, channel);
       if (missing.length) return 'Permissions manquantes pour le bot : ' + missing.join(', ') + '.';
     }
+    if (this.config[key] !== channelId) this.cancelWaiting(guild);
     this.save({ ...this.config, [key]: channelId });
     this.errors.delete(key);
   }
@@ -103,18 +106,57 @@ class TemporaryVoice {
     }
   }
 
+  cancelWaiting(guild) {
+    for (const [key, entry] of this.waiting) {
+      if (guild && entry.guild !== guild) continue;
+      clearTimeout(entry.timer);
+      this.waiting.delete(key);
+    }
+  }
+
+  nameRoom(message) {
+    const guild = message.guild;
+    if (!guild || message.author.bot || message.webhookId || !this.isOnline(guild)) return;
+    const key = this.key(guild);
+    const id = message.author.id;
+    const entry = this.waiting.get(key + ':' + id);
+    if (!entry?.accepting || message.channelId !== entry.creator || this.config[key] !== entry.creator ||
+        guild.voiceStates.cache.get(id)?.channelId !== entry.creator) return;
+    const name = message.content.trim();
+    if (name && name.length <= 95 && !/[\x00-\x1f\x7f]/.test(name)) entry.name = name;
+  }
+
   onUpdate(previous, state) {
     const guild = state.guild;
     if (previous.channelId === state.channelId) return;
     if (previous.channelId) this.schedule(guild, previous.channelId);
-    const creator = this.config[this.key(guild)];
-    if (creator && state.channelId === creator) void this.create(guild, state.id, creator);
+    const key = this.key(guild);
+    const creator = this.config[key];
+    const memberKey = key + ':' + state.id;
+    const existing = this.waiting.get(memberKey);
+    if (existing) {
+      clearTimeout(existing.timer);
+      this.waiting.delete(memberKey);
+    }
+    if (!creator || state.channelId !== creator ||
+        state.id === guild.client.user.id || state.member?.user.bot) return;
+    const entry = { guild, creator, accepting: true, name: undefined, timer: undefined };
+    entry.timer = setTimeout(async () => {
+      entry.accepting = false;
+      try {
+        await this.create(guild, state.id, creator, entry.name, () => this.waiting.get(memberKey) === entry);
+      } finally {
+        if (this.waiting.get(memberKey) === entry) this.waiting.delete(memberKey);
+      }
+    }, wait);
+    entry.timer.unref();
+    this.waiting.set(memberKey, entry);
   }
 
-  async create(guild, memberId, creatorId) {
+  async create(guild, memberId, creatorId, name, stillWaiting) {
     const key = this.key(guild);
     const operation = key + ':' + memberId;
-    const current = () => this.isOnline(guild) &&
+    const current = () => stillWaiting() && this.isOnline(guild) &&
       this.config[key] === creatorId && guild.voiceStates.cache.get(memberId)?.channelId === creatorId;
     if (!current() || this.pending.has(operation)) return;
 
@@ -129,7 +171,7 @@ class TemporaryVoice {
       const creator = guild.channels.cache.get(creatorId);
       if (creator?.type !== ChannelType.GuildVoice) return;
       room = await guild.channels.create({
-        name: ('Vocal de ' + member.displayName).slice(0, 95),
+        name: name || ('Vocal de ' + member.displayName).slice(0, 95),
         type: ChannelType.GuildVoice,
         parent: creator.parentId || undefined,
         permissionOverwrites: [...creator.permissionOverwrites.cache.values()].map(overwrite => ({

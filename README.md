@@ -26,13 +26,13 @@ La version affichée par `node -v` doit être **v26 ou supérieure**. Attends qu
    | Fonction | Permissions Discord |
    | --- | --- |
    | Suivi vocal et mesure de la parole | **Voir le salon**, **Se connecter** |
-   | Création et suppression des vocaux temporaires | **Gérer les salons**, **Déplacer les membres**, **Voir le salon**, **Se connecter** |
+   | Création et suppression des vocaux temporaires | **Gérer les salons**, **Déplacer les membres**, **Voir le salon**, **Se connecter**. Les membres doivent pouvoir écrire dans le chat du vocal créateur. |
    | Attribution, retrait et promotion de rôles | **Gérer les rôles** |
 
 4. Enregistre les réglages et ouvre le lien d’installation. Choisis **Ajouter à un serveur**, sélectionne ton serveur et confirme. Utilise un compte qui a la permission **Gérer le serveur**.
 5. Pour gérer les grades, ouvre **Paramètres du serveur → Rôles** dans Discord et place le rôle du bot au-dessus des rôles qu’il doit modifier.
 
-Les options **Privileged Gateway Intents** peuvent rester désactivées. [Guide d’installation Discord](https://docs.discord.com/developers/quick-start/getting-started#installing-your-app) · [Hiérarchie des rôles](https://docs.discord.com/developers/topics/permissions#role-hierarchy)
+Dans le portail Discord, ouvre **Bot → Privileged Gateway Intents**, active **Message Content Intent** et enregistre. Les autres intents privilégiés peuvent rester désactivés. [Guide d’installation Discord](https://docs.discord.com/developers/quick-start/getting-started#installing-your-app) · [Hiérarchie des rôles](https://docs.discord.com/developers/topics/permissions#role-hierarchy)
 
 ## 3. Enregistrer le token depuis le terminal
 
@@ -40,7 +40,6 @@ Les options **Privileged Gateway Intents** peuvent rester désactivées. [Guide 
 2. Dans le dossier du projet, lance :
 
    ```sh
-   cd discord-vocal-main
    npm run init
    ```
 
@@ -57,7 +56,7 @@ npm start
 Ouvre [http://127.0.0.1:3210](http://127.0.0.1:3210) si le navigateur ne s’ouvre pas. Attends que le tableau de bord affiche **En ligne**. Dès les démarrages suivants, `npm start` suffit.
 
 - **Suivi vocal**. Rejoins un vocal de ton serveur et vérifie ton temps de présence dans **Classement vocal**. Pour mesurer la parole, choisis le salon dans **Temps de parole**, puis clique sur **Appliquer**. Le bot analyse le son reçu dans ce salon sans enregistrer l’audio. La mesure est une estimation et peut inclure des bruits suffisamment forts.
-- **Vocal créateur**. Choisis ton serveur et clique sur **Créer et activer**, ou sélectionne un vocal existant et clique sur **Enregistrer**. Rejoins le vocal créateur dans Discord. Le bot doit te déplacer dans un salon à ton nom. Quitte ce salon pour vérifier qu’il est supprimé quelques secondes après le dernier départ.
+- **Vocal créateur**. Choisis ton serveur et clique sur **Créer et activer**, ou sélectionne un vocal existant et clique sur **Enregistrer**. Rejoins le vocal créateur dans Discord. Écris le nom de ton futur salon dans le chat du vocal créateur. Si tu envoies plusieurs noms, le dernier nom valide est retenu. Après 60 secondes dans le vocal créateur, le bot crée le salon et t’y déplace. Sans message valide, le salon s’appelle **Vocal de [ton pseudo]**. Si tu quittes le vocal créateur avant la fin, la création est annulée. Quitte ce salon pour vérifier qu’il est supprimé quelques secondes après le dernier départ.
 - **Grades**. Recherche un membre par pseudo ou ID. Choisis **Attribuer un rôle**, **Retirer un rôle** ou **Promouvoir**, puis sélectionne les rôles ou coche **Saisir les identifiants des rôles** pour coller leurs ID.
 
 Garde le terminal ouvert pour que le bot continue de fonctionner. Pour l’arrêter, appuie sur **Ctrl+C**.

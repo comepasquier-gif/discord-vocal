@@ -50,6 +50,7 @@ function save() {
 }
 
 function stop() {
+  temporary.cancelWaiting();
   closeListeners();
   totals.pause();
   save();
@@ -61,7 +62,7 @@ function stop() {
 
 function connect(token) {
   const connection = new Client({
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
   });
   client = connection;
   status = 'connecting';
@@ -85,10 +86,20 @@ function connect(token) {
   }
 
   connection.on(Events.ClientReady, sync);
+  connection.on(Events.MessageCreate, message => {
+    if (client === connection && status === 'online') temporary.nameRoom(message);
+  });
   connection.on(Events.ShardReady, () => setImmediate(sync));
   connection.on(Events.ShardResume, sync);
   connection.on(Events.ShardReconnecting, pause);
-  connection.on(Events.ShardDisconnect, pause);
+  connection.on(Events.ShardDisconnect, event => {
+    if (client !== connection) return;
+    pause();
+    if (event.code === 4014) {
+      stop();
+      status = 'message_intent';
+    }
+  });
   connection.on(Events.Error, () => {});
   connection.on(Events.ShardError, () => {});
 
@@ -97,6 +108,7 @@ function connect(token) {
     totals.pause();
     save();
     closeListeners();
+    temporary.cancelWaiting();
     status = 'reconnecting';
   }
 
@@ -117,6 +129,7 @@ function connect(token) {
     connection.on(event, guild => {
       if (client !== connection) return;
       closeListener(guild.id);
+      temporary.cancelWaiting(guild);
       totals.pause(botId, guild.id);
       save();
     });
@@ -126,7 +139,7 @@ function connect(token) {
     if (client !== connection) return;
     stop();
     status = error.code === 'TokenInvalid' || error.status === 401
-      ? 'invalid' : 'error';
+      ? 'invalid' : /disallowed intents/i.test(error.message) ? 'message_intent' : 'error';
   });
 }
 
